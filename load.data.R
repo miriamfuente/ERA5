@@ -34,7 +34,7 @@ dev.off()
 
 # Varibles Data 
 df <- "/lustre/gmeteo/PTICLIMA/DATA/REANALYSIS/ERA5/data/global/0.25/ERA5_025.ncml"
-di.obs <- dataInventory(df) # Variables: precipitation = tp, temperature_max=t2mx
+di.obs <- dataInventory(df) # Variables: precipitation = tp (meters), temperature_max=t2mx (kelvin)
 years = 2000
 dataset <- loadGridData(df, var="t2mx", latLim=c(-60,90), years=years)
 dataset <- gridArithmetics(dataset, 273.15, operator="-")
