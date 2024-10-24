@@ -49,3 +49,23 @@ for (i in 1:12){
 }
 pr.q50 <- do.call(bindGrid, c(monthly_quantile, list(dimension = "time")))
 saveRDS(pr.q50, "pr.q50.rds", compress="xz")
+
+hottest.month <- readRDS("hottest.month.masked.rds")
+pr.q50 <- readRDS("pr.q50.rds")
+
+final_pr <- array(NA, dim = dim(hottest.month$Data))
+a <- dim(final_pr)[2]
+b <- dim(final_pr)[3]
+
+for (i in 1:a){
+  for (j in 1:b){
+    month <- hottest.month$Data[1,i,j]
+    pr.month <- pr.q50$Data[,i,j]
+    final_pr[1,i,j] <- pr.month[month]
+  }
+}
+
+pr.q50.month <- hottest.month
+pr.q50.month$Data <- final_pr
+
+saveRDS(pr.q50.month, "pr.q50.hottest.month.rds", compress="xz")
