@@ -137,7 +137,7 @@ difference_in_positions_masked <- gridArithmetics(difference_in_positions, mask,
 
 png("difference.hottest.second.idx.png", width = 1000, height = 600)
 spatialPlot(difference_in_positions_masked, backdrop.theme = "coastline", color.theme ="YlOrRd", rev.colors = FALSE, 
-          main = "Difference betweeen the of the hottest month and the second one", set.min = 0.5, set.max = 6.5, at = seq(0.5, 6.5, 1),
+          main = "Difference betweeen the hottest month and the second one", set.min = 0.5, set.max = 6.5, at = seq(0.5, 6.5, 1),
           colorkey = list(space = "right",
                 title = list("Months", cex = 1)))
 dev.off()
