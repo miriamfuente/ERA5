@@ -15,14 +15,13 @@ library(climate4R.indices) # needed for calculate indices
 
 # Years to study
 years <- 1986:2005
-
 # Variables Data
 df <- "/lustre/gmeteo/PTICLIMA/DATA/REANALYSIS/ERA5/data/global/0.25/ERA5_025.ncml"
 
 # Function to load and aggregate data by month
 process_year <- function(year) {
   # Load the data by year
-  dataset <- loadGridData(df, var="t2mx", years=year)
+  dataset <- loadGridData(df, var="t2mx", years=year, latLim=latitude, lonLim=longitude)
   # Convert Kelvin to Celsius
   dataset <- gridArithmetics(dataset, 273.15, operator="-")
   # Aggregate by month
@@ -55,6 +54,13 @@ tmax.aggr.year <- do.call(bindGrid, c(monthly_means, list(dimension = "time")))
 temp_data <- tmax.aggr.year$Data
 # Apply the function which.max() in the "time" dimension and obtain the index of the maximum value
 idx.hottest.month.data <- apply(temp_data, c(2, 3), which.max)
+
+# FOR THE DATSET ERA5-LAND
+idx.hottest.month.data <- apply(tmax.aggr.year$Data, c(2, 3), function(x) {
+    if (all(is.na(x))) return(NA)  # Devuelve NA si todos los valores son NaN
+    which.max(x)
+})
+
 # Apply the function max() in the "time" dimension to obtain the maximum value
 value.hottest.month.data <- apply(temp_data, c(2, 3), max)
 
@@ -79,8 +85,8 @@ saveRDS(value.hottest.month.masked, "value.hottest.month.masked.rds", compress="
 hottest.month.masked <- readRDS("idx.hottest.month.masked.rds")
 my_palette <- colorRampPalette(c("yellow",  "red",  "orange", "lightyellow"))(12)
 
-png("hottest.month.masked.png", width = 1000, height = 600)
-spatialPlot(idx.hottest.month.masked, backdrop.theme = "coastline", color.theme ="RdBu", rev.colors = TRUE, 
+png("hottest.month.era5land.png", width = 1000, height = 600)
+spatialPlot(idx.hottest.month, backdrop.theme = "coastline", color.theme ="YlOrRd", rev.colors = FALSE, 
           main = "Hottest month", color.key = TRUE, set.min = 0.5, set.max = 12.5, at = seq(0.5, 12.5, 1),
           colorkey = list(space = "right",
                 title = list("Month", cex = 1))) 
