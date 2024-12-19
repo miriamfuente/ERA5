@@ -11,11 +11,11 @@ library(downscaleR) # needed for the biasCorrection (function biasCorrection)
 library(climate4R.indices) # needed for calculate indices
 
 # Variables Data
-hottest.month <- readRDS("quantiles/hottest.month.pi.rds")
-pr.daily <- readRDS("quantiles/pr.daily.hottest.month.pi.1986.2005.rds")
-pr.q50 <- readRDS("quantiles/pr.q50.monthly.pi.1986.2005.rds")
-pr.monthly <- readRDS("quantiles/pr.monthly.pi.1986.2005.rds")
-mask <- readRDS("quantiles/mask.pi.rds")
+hottest.month <- readRDS("/oceano/gmeteo/users/fuentesm/ERA5/ERA5-LAND/data/basic/hottest.month.pi.1986.2005.era5.land.rds")
+pr.daily <- readRDS("/oceano/gmeteo/users/fuentesm/ERA5/ERA5-LAND/data/basic/pr.daily.hottest.month.pi.era5.land.rds")
+pr.q50 <- readRDS("/oceano/gmeteo/users/fuentesm/ERA5/ERA5-LAND/data/quantiles/pr.q50.monthly.pi.1986.2005.era5.land.rds")
+pr.monthly <- readRDS("/oceano/gmeteo/users/fuentesm/ERA5/ERA5-LAND/data/basic/pr.monthly.pi.1986.2005.era5.land.rds")
+mask <- readRDS("/oceano/gmeteo/users/fuentesm/ERA5/ERA5-LAND/data/basic/mask.pi.era5.land.rds")
 
 # Define the months
 meses <- 1:12
@@ -36,7 +36,7 @@ for (i in 1:dim(pr.monthly$Data)[which(attr(pr.monthly$Data, "dimensions") == "l
     for (j in 1:dim(pr.monthly$Data)[which(attr(pr.monthly$Data, "dimensions") == "lon")]) {
         pr.monthly.lon <- subsetDimension(pr.monthly.lat, dimension="lon", indices=j)
         pr.q50.lon <- subsetDimension(pr.q50.lat, dimension="lon", indices=j)
-        month <- hottest.month$Data[,i, j]
+        month <- hottest.month$Data[i, j]
         if (is.na(month)) {
             pr.final.lon <- redim(pr.monthly.lon, drop = TRUE)
         } else {
@@ -45,7 +45,11 @@ for (i in 1:dim(pr.monthly$Data)[which(attr(pr.monthly$Data, "dimensions") == "l
             pr.q50.lon.hot <- subsetGrid(pr.q50.lon, season=month)
             for (k in 1:dim(pr.monthly.lon.hot$Data)[which(attr(pr.monthly.lon.hot$Data, "dimensions") == "time")]) {
                 if (pr.monthly.lon.hot$Data[k] > pr.q50.lon.hot$Data) {
-                    pr.monthly.lon.hot$Data[k] <- 0
+                    if (pr.monthly.lon.hot$Data[k] <= 30){
+                        pr.monthly.lon.hot$Data[k] <- 1
+                    } else {
+                        pr.monthly.lon.hot$Data[k] <- 0
+                    }
                 } else {
                     pr.monthly.lon.hot$Data[k] <- 1
                 }
@@ -75,15 +79,15 @@ for (i in 1:dim(pr.monthly$Data)[which(attr(pr.monthly$Data, "dimensions") == "l
 list.total <- redim(do.call(bindGrid, c(list.lat, list(dimension = "lat", skip.temporal.check = TRUE))), drop=TRUE)
 
 # Save the results
-saveRDS(list.total, "quantiles/pr.events.pi.1986.2005.rds", compress="xz")
+saveRDS(list.total, "ERA5-LAND/data/basic/pr.events.pi.30mm.1986.2005.era5.land.rds", compress="xz")
 
 sum.events <- climatology(list.total, clim.fun = list(FUN = "sum", na.rm = TRUE))
 sum.events.mask <- gridArithmetics(sum.events, mask, operator = "*")
 
 # Plot the results
-png("quantiles/pr.events.png", width=1200, height=800)
+png("ERA5-LAND/data/basic/pr.events.30mm.png", width=1200, height=800)
 spatialPlot(sum.events.mask, backdrop.theme="coastline", color.theme="YlGnBu", set.min=0.5, set.max=20.5, at=seq(0.5, 20.5, 1),
-            main="Number of events Pr <= P50", xlab="Longitude", ylab="Latitude", 
+            main="Number of events Pr <= P50 & Pr(<30mm) > P50", xlab="Longitude", ylab="Latitude", 
             colorkey = list(space = "right",
                             title = list("Nº Events", cex = 1))
             )
