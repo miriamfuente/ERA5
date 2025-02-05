@@ -1,5 +1,5 @@
 fun.duration <- function(ce, hottest.month, streak, years){
-    source("binSpell.R")
+    source("/oceano/gmeteo/users/fuentesm/ERA5/functions/binSpell.R")
 
     # Initialize variables and lists
     meses <- 1:12

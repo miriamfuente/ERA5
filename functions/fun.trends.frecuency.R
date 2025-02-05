@@ -1,6 +1,6 @@
 fun.trends.frecuency <- function(ce, hottest.month, mask) {
     # Output: list of the trend and each significance
-    source("/oceano/gmeteo/users/fuentesm/ERA5/fun.aux.trends.R")
+    source("/oceano/gmeteo/users/fuentesm/ERA5/functions/fun.aux.trends.R")
     
     lon.y <- list()
     lat.y <- list()
@@ -8,11 +8,28 @@ fun.trends.frecuency <- function(ce, hottest.month, mask) {
     start_date <- NULL
     end_date <- NULL
 
+    found_valid_month <- FALSE
+    for (i in 1:dim(hottest.month$Data)[which(attr(hottest.month$Data, "dimensions") == "lat")]) {
+        for (j in 1:dim(hottest.month$Data)[which(attr(hottest.month$Data, "dimensions") == "lon")]) {
+            month <- hottest.month$Data[i, j]
+            if (!is.na(month)) {
+                ce.valid <- subsetDimension(ce, dimension = "lat", indices = i)
+                ce.valid <- subsetDimension(ce.valid, dimension = "lon", indices = j)
+                ce.valid <- subsetGrid(ce.valid, season = month)
+                start_date <- ce.valid$Dates$start
+                end_date <- ce.valid$Dates$end
+                found_valid_month <- TRUE
+                break
+            }
+        }
+        if (found_valid_month) break
+    }
+
     for (i in 1:dim(ce$Data)[which(attr(ce$Data, "dimensions") == "lat")]) {
         ce.lat <- subsetDimension(ce, dimension="lat", indices=i)
-        ce.lat.15 <- subsetDimension(ce, dimension="lat", indices=15)
+        # ce.lat.15 <- subsetDimension(ce, dimension="lat", indices=15)
         for (j in 1:dim(ce$Data)[which(attr(ce$Data, "dimensions") == "lon")]) {
-            ce.lon.15 <- subsetDimension(ce.lat.15, dimension="lon", indices=15)
+            # ce.lon.15 <- subsetDimension(ce.lat.15, dimension="lon", indices=15)
             ce.lon <- subsetDimension(ce.lat, dimension="lon", indices=j)
             month <- hottest.month$Data[i,j]
             if(is.na(month)){
@@ -23,15 +40,6 @@ fun.trends.frecuency <- function(ce, hottest.month, mask) {
             ce.lon <- subsetGrid(ce.lon, season=month)
             ce.lon$Data <- array(ce.lon$Data, dim = c(620, 1, 1))
             attr(ce.lon$Data, "dimensions") <- c("time", "lat", "lon")
-            }
-            # Needed to assign the start and end dates to the final dataset
-            if (is.null(start_date) && is.null(end_date)) {
-                ce.lat.15 <- subsetDimension(ce, dimension="lat", indices=15)
-                ce.lon.15 <- subsetDimension(ce.lat.15, dimension="lon", indices=15)
-                month.15 <- hottest.month$Data[15,15]
-                ce.lon.15 <- subsetGrid(ce.lon.15, season=month.15)
-                start_date <- ce.lon.15$Dates$start
-                end_date <- ce.lon.15$Dates$end
             }
             
             # Assign the start and end dates to the final dataset

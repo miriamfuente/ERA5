@@ -1,4 +1,6 @@
-fun.hottest.month <- function(tmax.total){
+fun.hottest.month <- function(tmax){
+    # Aggregation of each month
+    tmax.total <- aggregateGrid(grid = tmax, aggr.m = list(FUN = "mean", na.rm = TRUE))
     # tmax.total: tmax.daily without transformation 
     monthly_means <- list()
     for (i in 1:12){
